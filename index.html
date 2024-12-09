@@ -47,41 +47,39 @@
 
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script>
-    const apiUrl = 'https://hihuli.com/?new/short,page:1'; // Thay URL API thực tế
+    const apiUrl = 'https://hihuli.com/?new/short,page:1';
     let videos = []; // Danh sách video
     let currentIndex = 0; // Vị trí video hiện tại
     const videoPlayer = document.getElementById('videoPlayer');
     const videoSource = document.getElementById('videoSource');
     const preloadNext = document.getElementById('preloadNext');
 
-    // Hàm fetch video từ API
     async function fetchVideos() {
       try {
         const response = await fetch(apiUrl, { method: 'GET' });
         if (!response.ok) throw new Error('Failed to fetch videos');
         videos = await response.json();
-        if (videos.length > 0) loadVideo(0); // Tải video đầu tiên
+        if (videos.length > 0) loadVideo(0);
       } catch (error) {
         console.error('Error fetching videos:', error);
         alert('Could not load videos. Please try again later.');
       }
     }
 
-    // Hàm tải video
+
     function loadVideo(index) {
       if (!videos[index]) return;
 
-      // Dừng và xoá video hiện tại nếu có
+
       stopCurrentVideo();
 
       const videoUrl = videos[index].m3u8;
 
-      // HLS.js hỗ trợ video HLS
       if (Hls.isSupported()) {
         const hls = new Hls();
         hls.loadSource(videoUrl);
         hls.attachMedia(videoPlayer);
-        videoPlayer.hlsInstance = hls; // Lưu trữ instance để dừng khi cần
+        videoPlayer.hlsInstance = hls; 
       } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
         videoSource.src = videoUrl;
         videoPlayer.load();
@@ -90,33 +88,29 @@
       videoPlayer.play();
       currentIndex = index;
       updateButtons();
-      preloadNextVideo(index + 1); // Tải trước video tiếp theo
+      preloadNextVideo(index + 1);
 
-      // Xóa bộ nhớ đệm nếu đến video thứ 9
       if (index === 8) clearBrowserCache();
     }
 
-    // Hàm dừng và xóa video hiện tại
     function stopCurrentVideo() {
       if (videoPlayer.hlsInstance) {
-        videoPlayer.hlsInstance.destroy(); // Dừng instance HLS
+        videoPlayer.hlsInstance.destroy();
         videoPlayer.hlsInstance = null;
       }
       videoPlayer.pause();
       videoSource.src = '';
-      videoPlayer.load(); // Xóa URL đang phát
+      videoPlayer.load();
     }
 
-    // Hàm preload video tiếp theo
     function preloadNextVideo(nextIndex) {
       if (videos[nextIndex]) {
         preloadNext.href = videos[nextIndex].m3u8;
       } else {
-        preloadNext.href = ''; // Xóa preload nếu không có video tiếp theo
+        preloadNext.href = '';
       }
     }
 
-    // Xóa bộ nhớ đệm của trình duyệt
     function clearBrowserCache() {
       if ('caches' in window) {
         caches.keys().then(cacheNames => {
@@ -130,13 +124,11 @@
       }
     }
 
-    // Cập nhật trạng thái nút
     function updateButtons() {
       document.getElementById('prevButton').disabled = currentIndex <= 0;
       document.getElementById('nextButton').disabled = currentIndex >= videos.length - 1;
     }
 
-    // Thêm sự kiện cho nút
     document.getElementById('prevButton').addEventListener('click', () => {
       if (currentIndex > 0) loadVideo(currentIndex - 1);
     });
@@ -145,7 +137,6 @@
       if (currentIndex < videos.length - 1) loadVideo(currentIndex + 1);
     });
 
-    // Khởi động fetch
     fetchVideos();
   </script>
 </body>
